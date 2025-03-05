@@ -1,174 +1,137 @@
 open System
 open System.Globalization
 
+// Formats binary list as [0;1;0;1] style string
 let formatBinary (bin: int list) =
     let s = bin |> List.map string |> String.concat ";"
     "[" + s + "]"
 
+// Removes 0x prefix and converts to uppercase for hex display
 let strip0x (hexStr: string) =
-    if hexStr.StartsWith("0x", StringComparison.OrdinalIgnoreCase) then
-        hexStr.Substring(2)
-    else
-        hexStr
+    hexStr.Replace("0x", "").ToUpper()
 
-let printArithmetic (op: string) (aBin: int list) (aDec: int)
-                    (bBin: int list) (bDec: int)
-                    (resBin: int list) (resDec: int) =
+// Recursively prompts user until valid signed byte (-128 to 127) is entered
+let rec promptDecimal (message: string) : int =
+    printf "%s" message
+    let input = Console.ReadLine().Trim()
+    match Int32.TryParse(input) with
+    | true, value when -128 <= value && value <= 127 -> value
+    | _ ->
+        printfn "Invalid input. Enter value between -128 and 127."
+        promptDecimal message
+
+// Recursively prompts user until valid hex byte (00-FF) is entered
+let rec promptHex (message: string) : string =
+    printf "%s" message
+    let input = Console.ReadLine().Trim().ToUpper()
+    match Int32.TryParse(input.Replace("0x", ""), NumberStyles.HexNumber, null) with
+    | true, value when 0 <= value && value <= 255 -> "0x" + input.Replace("0x", "")
+    | _ ->
+        printfn "Invalid hex. Enter value between 0x00 and 0xFF."
+        promptHex message
+
+// Converts integer to 8-bit two's complement binary representation
+let intToBinary (num: int) : int list =
+    let adjusted = if num < 0 then 256 + num else num  // Handle negative numbers
+    let rec toBinary n acc bitCount =
+        if bitCount = 8 then acc
+        else toBinary (n / 2) (n % 2 :: acc) (bitCount + 1)  // Build binary list LSB-first
+    toBinary adjusted [] 0
+
+// Converts 8-bit binary list to signed integer (two's complement)
+let binaryToInt (bin: int list) : int =
+    match bin with
+    | [] -> 0
+    | signBit::rest ->
+        let value = List.fold2 (fun acc bit weight -> acc + bit * weight) 0 rest [64; 32; 16; 8; 4; 2; 1]
+        if signBit = 1 then -128 + value else value  // MSB is sign bit
+
+// Converts binary list to unsigned byte value
+let binaryToByte (bin: int list) : int =
+    List.fold2 (fun acc bit weight -> acc + bit * weight) 0 bin [128; 64; 32; 16; 8; 4; 2; 1]
+
+// Bitwise operations implemented as list transformations
+let NOT bin = List.map (fun b -> 1 - b) bin         // Flip all bits
+let AND bin1 bin2 = List.map2 (fun a b -> a &&& b) bin1 bin2
+let OR bin1 bin2 = List.map2 (fun a b -> a ||| b) bin1 bin2
+let XOR bin1 bin2 = List.map2 (fun a b -> a ^^^ b) bin1 bin2
+
+// Binary addition with carry propagation and 8-bit truncation
+let ADD bin1 bin2 =
+    let rec add bits1 bits2 carry acc =
+        match bits1, bits2 with
+        | [], [] -> 
+            acc |> List.truncate 8  // Discard overflow beyond 8 bits
+        | h1::t1, h2::t2 ->
+            let sum = h1 + h2 + carry
+            let newBit = sum % 2    // Current bit value
+            let newCarry = sum / 2  // Carry to next position
+            add t1 t2 newCarry (newBit :: acc)  // Build result in reverse order
+        | _ -> failwith "Mismatched lengths"
+    // Process bits from LSB to MSB (reverse input lists)
+    add (List.rev bin1) (List.rev bin2) 0 []
+
+// Subtraction implemented as addition with two's complement negation
+let SUB bin1 bin2 = ADD bin1 (ADD (NOT bin2) [0;0;0;0;0;0;0;1])  
+
+// Display results for logical operations (AND/OR/XOR)
+let printLogical op aBin aHex bBin bHex resBin =
+    let resHex = binaryToByte resBin |> fun x -> x.ToString("X2")  // Force 2-digit hex
+    printfn "%s %s %s" op (formatBinary aBin) (strip0x aHex)
+    printfn "    %s %s" (formatBinary bBin) (strip0x bHex)
+    printfn "________________________________"
+    printfn "    %s %s" (formatBinary resBin) resHex
+
+// Display results for arithmetic operations (ADD/SUB)
+let printArithmetic op aBin aDec bBin bDec resBin =
+    let resDec = binaryToInt resBin  // Use signed conversion
     printfn "%s %s %d" op (formatBinary aBin) aDec
     printfn "    %s %d" (formatBinary bBin) bDec
     printfn "________________________________"
     printfn "    %s %d" (formatBinary resBin) resDec
 
-
-let printLogical (op: string)
-                 (aBin: int list) (aHex: string)
-                 (bBin: int list) (bHex: string)
-                 (resBin: int list) (resHex: string) =
-    printfn "%s %s %s" op (formatBinary aBin) (strip0x aHex)
-    printfn "    %s %s" (formatBinary bBin) (strip0x bHex)
-    printfn "________________________________"
-    printfn "    %s %s" (formatBinary resBin) (strip0x resHex)
-
-
-let rec promptDecimal (message: string) : int =
-    printf "%s" message
-    let input = Console.ReadLine().Trim()
-    match System.Int32.TryParse(input) with
-    | true, value when value >= -128 && value <= 127 ->
-        value
-    | _ ->
-        printfn "Invalid decimal input. Please enter a number between -128 and 127."
-        promptDecimal message
-
-let rec promptHex (message: string) : string =
-    printf "%s" message
-    let raw = Console.ReadLine().Trim()
-    let input = raw.Replace("0x", "")
-    match System.Int32.TryParse(input, NumberStyles.HexNumber, CultureInfo.InvariantCulture) with
-    | true, value when value >= 0 && value <= 255 ->
-        "0x" + input
-    | _ ->
-        printfn "Invalid hex input. Please enter a valid hex number between 0x00 and 0xFF."
-        promptHex message
-
-//   Emulator
-
-// Convert an integer to 8-bit binary
-let intToBinary (num: int) : int list =
-    let adjusted = if num < 0 then 256 + num else num
-    let rec toBinary num acc bitCount =
-        if bitCount = 8 then acc
-        else toBinary (num / 2) ((num % 2) :: acc) (bitCount + 1)
-    toBinary adjusted [] 0
-
-// Convert 8-bit binary to an integer (unsigned)
-let binaryToInt (bin: int list) : int =
-    let values = [128; 64; 32; 16; 8; 4; 2; 1]
-    List.fold2 (fun acc b v -> acc + (b * v)) 0 bin values
-
-// Bitwise NOT on 8-bit
-let bitwiseNot (bin: int list) : int list =
-    bin |> List.map (fun b -> if b = 1 then 0 else 1)
-
-// 8-bit addition (mod 256)
-let addBinary (a: int list) (b: int list) : int list =
-    let rec addHelper a b carry acc =
-        match a, b with
-        | [], [] -> acc
-        | ah::at, bh::bt ->
-            let sum = ah + bh + carry
-            let newBit = sum % 2
-            let newCarry = sum / 2
-            addHelper at bt newCarry (newBit :: acc)
-        | _ -> failwith "Binary lists must be of equal length"
-    addHelper (List.rev a) (List.rev b) 0 []
-
-// Subtraction: a - b = a + (two's complement of b)
-let subBinary (a: int list) (b: int list) : int list =
-    let bNot = bitwiseNot b
-    let bTwoComp = addBinary bNot [0;0;0;0;0;0;0;1]
-    addBinary a bTwoComp
-
-// Logical operation on 8-bit unsigned
-let bitwiseOp (op: int -> int -> int) (a: int list) (b: int list) : int list =
-    List.map2 op a b
-
-// Convert hex string  to 8-bit binary
-let hexToBinary (hex: string) : int list =
-    let cleaned = hex.Trim().Replace("0x", "")
-    let num = Convert.ToInt32(cleaned, 16) % 256
-    intToBinary num
-
-// Convert binary to hex 
-let binaryToHex (bin: int list) : string =
-    let num = binaryToInt bin
-    sprintf "%X" num  
-
-// Main Loop using Tail recursion
-//emulator.fsx/Users/roublenepalgmail.com/Desktop/Spring_Sem/programming /mini_project2/emulator.fsx
-let rec main () =
-    printfn ""
-    printfn "Enter the operation you want to perform (NOT, OR, AND, XOR, ADD, SUB or QUIT)?"
-    let operation = Console.ReadLine().Trim().ToUpper()
-
-    match operation with
-    | "ADD" | "SUB" ->
-        // Arithmetic: decimal input
-        let aDec = promptDecimal "Enter first decimal value (-128 to 127): "
-        let bDec = promptDecimal "Enter second decimal value (-128 to 127): "
-        let aBin = intToBinary aDec
-        let bBin = intToBinary bDec
-        let resBin =
-            match operation with
-            | "ADD" -> addBinary aBin bBin
-            | "SUB" -> subBinary aBin bBin
-            | _     -> failwith "Invalid operation"
-
-        // Convert to signed result
-        let rawResult = binaryToInt resBin
-        let resDec = if rawResult > 127 then rawResult - 256 else rawResult
-
-        printArithmetic operation aBin aDec bBin bDec resBin resDec
-        main ()
-
-    | "AND" | "OR" | "XOR" ->
-        // Logical: hex input
-        let aHexInput = promptHex "Enter first hex value (0x0 to 0xFF): "
-        let bHexInput = promptHex "Enter second hex value (0x0 to 0xFF): "
-        let aBin = hexToBinary aHexInput
-        let bBin = hexToBinary bHexInput
-        let resBin =
-            match operation with
-            | "AND" -> bitwiseOp (fun x y -> if x = 1 && y = 1 then 1 else 0) aBin bBin
-            | "OR"  -> bitwiseOp (fun x y -> if x = 1 || y = 1 then 1 else 0) aBin bBin
-            | "XOR" -> bitwiseOp (fun x y -> if x <> y then 1 else 0) aBin bBin
-            | _     -> failwith "Invalid logical operation"
-
-        let resHex = binaryToHex resBin
-
-        printLogical operation aBin aHexInput bBin bHexInput resBin resHex
-        main ()
-
-    | "NOT" ->
-        // Single hex input
-        let aHexInput = promptHex "Enter hex value (0x0 to 0xFF): "
-        let aBin = hexToBinary aHexInput
-        let resBin = bitwiseNot aBin
-        let resHex = binaryToHex resBin
-
-        // Formatting
-        printfn "%s %s %s" operation (formatBinary aBin) (strip0x aHexInput)
+// Main  interface
+let rec main() =
+    printfn "\nEnter operation (NOT, AND, OR, XOR, ADD, SUB, QUIT):"
+    match Console.ReadLine().Trim().ToUpper() with
+    | "QUIT" -> printfn "Goodbye!"
+    | "NOT" ->  // Unary operation flow
+        let hex = promptHex "Enter hex value (0x00-0xFF): "
+        let num = Convert.ToInt32(strip0x hex, 16)
+        let res = NOT (intToBinary num)
+        printfn "NOT %s %s" (formatBinary (intToBinary num)) (strip0x hex)
         printfn "________________________________"
-        printfn "    %s %s" (formatBinary resBin) (strip0x resHex)
+        printfn "    %s %s" (formatBinary res) ((binaryToByte res).ToString("X2"))
+        main()
 
-        main ()
+    | op when ["AND"; "OR"; "XOR"] |> List.contains op ->  // Binary logical operations
+        let aHex = promptHex "Enter first hex value (0x00-0xFF): "
+        let bHex = promptHex "Enter second hex value (0x00-0xFF): "
+        let a = intToBinary (Convert.ToInt32(strip0x aHex, 16))
+        let b = intToBinary (Convert.ToInt32(strip0x bHex, 16))
+        let res = match op with  // Select operation
+                  | "AND" -> AND a b
+                  | "OR" -> OR a b
+                  | "XOR" -> XOR a b
+                  | _ -> failwith "Never happens"
+        printLogical op a aHex b bHex res
+        main()
 
-    | "QUIT" ->
-        printfn "Exiting..."
+    | op when ["ADD"; "SUB"] |> List.contains op ->  // Arithmetic operations
+        let aDec = promptDecimal "Enter first decimal number(-128 to 127): "
+        let bDec = promptDecimal "Enter second decimal number (-128 to 127): "
+        let a = intToBinary aDec
+        let b = intToBinary bDec
+        let res = match op with  // Select operation
+                  | "ADD" -> ADD a b
+                  | "SUB" -> SUB a b
+                  | _ -> failwith "Never happens"
+        printArithmetic op a aDec b bDec res
+        main()
 
     | _ ->
-        printfn "Invalid operation. Please try again."
-        main ()
+        printfn "Invalid operation"
+        main()
 
-// Start
-main ()
+// Start the application
+main()
