@@ -50,13 +50,13 @@ let binaryToInt (bin: int list) : int =
 let binaryToByte (bin: int list) : int =
     List.fold2 (fun acc bit weight -> acc + bit * weight) 0 bin [128; 64; 32; 16; 8; 4; 2; 1]
 
-// Bitwise operations implemented as list transformations
+// Logical operations 
 let NOT bin = List.map (fun b -> 1 - b) bin         // Flip all bits
 let AND bin1 bin2 = List.map2 (fun a b -> a &&& b) bin1 bin2
 let OR bin1 bin2 = List.map2 (fun a b -> a ||| b) bin1 bin2
 let XOR bin1 bin2 = List.map2 (fun a b -> a ^^^ b) bin1 bin2
 
-// Binary addition with carry propagation and 8-bit truncation
+// Binary addition with carry propagation 
 let ADD bin1 bin2 =
     let rec add bits1 bits2 carry acc =
         match bits1, bits2 with
