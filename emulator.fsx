@@ -61,14 +61,13 @@ let ADD bin1 bin2 =
     let rec add bits1 bits2 carry acc =
         match bits1, bits2 with
         | [], [] -> 
-            acc |> List.truncate 8  // Discard overflow beyond 8 bits
+            acc  
         | h1::t1, h2::t2 ->
             let sum = h1 + h2 + carry
-            let newBit = sum % 2    // Current bit value
-            let newCarry = sum / 2  // Carry to next position
-            add t1 t2 newCarry (newBit :: acc)  // Build result in reverse order
+            let newBit = sum % 2
+            let newCarry = sum / 2
+            add t1 t2 newCarry (newBit :: acc)
         | _ -> failwith "Mismatched lengths"
-    // Process bits from LSB to MSB (reverse input lists)
     add (List.rev bin1) (List.rev bin2) 0 []
 
 // Subtraction implemented as addition with two's complement negation
