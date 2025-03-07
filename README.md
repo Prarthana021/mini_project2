@@ -22,10 +22,15 @@ XOR - A5 AND F1
 
 Addition 
 
+20 + 30 
+
+
+<img width="454" alt="Screenshot 2025-03-07 at 1 18 56 AM" src="https://github.com/user-attachments/assets/2f2f6def-c0da-4985-b0d7-c9186ca4fffc" />
+
 -128 + (-1)
 
-<img width="795" alt="Screenshot 2025-03-07 at 1 17 02 AM" src="https://github.com/user-attachments/assets/869369ec-03ad-4fa1-b9af-47cc8fa9980a" />
 
+<img width="486" alt="Screenshot 2025-03-07 at 1 18 22 AM" src="https://github.com/user-attachments/assets/68ca556c-7c07-4e01-8b70-19344a599147" />
 
 
 128+128 [Doesn't let the user enter number 127 and recursively prompts until valid number is entered]
@@ -47,6 +52,9 @@ Subtraction
 
 <img width="443" alt="Screenshot 2025-03-07 at 12 25 06 AM" src="https://github.com/user-attachments/assets/def4b311-ba73-45ed-a644-4f6477fa6c37" />
 
+-100+20
+
+<img width="466" alt="Screenshot 2025-03-07 at 1 20 14 AM" src="https://github.com/user-attachments/assets/cb4bd570-9b5c-44ec-81c7-fd28d6cf323e" />
 
 10-11
 
