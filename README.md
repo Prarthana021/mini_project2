@@ -2,6 +2,10 @@ NOT - F1
 
 <img width="470" alt="Screenshot 2025-03-07 at 1 09 20 AM" src="https://github.com/user-attachments/assets/8b537d34-b96a-446c-a45a-65b752edba58" />
 
+NOT - FF
+
+<img width="503" alt="Screenshot 2025-03-07 at 1 36 44 AM" src="https://github.com/user-attachments/assets/60b9513f-0c50-4643-8599-3f32adf26414" />
+
 
 
 AND - A5 AND F1 
@@ -9,13 +13,22 @@ AND - A5 AND F1
 <img width="542" alt="Screenshot 2025-03-07 at 1 10 38 AM" src="https://github.com/user-attachments/assets/13bfcdee-70a1-4207-ac6d-8b8df7d5d2c0" />
 
 
+AND - 55 AND D3 
 
-OR - A5 AND F1 
+
+<img width="584" alt="Screenshot 2025-03-07 at 1 37 23 AM" src="https://github.com/user-attachments/assets/2f6143b3-6200-40af-8f87-1321d4976e8a" />
+
+
+OR - A5 OR F1 
 
 <img width="507" alt="Screenshot 2025-03-07 at 1 12 03 AM" src="https://github.com/user-attachments/assets/9ed469c0-7d16-4ba3-a6b9-5b2c82f9a076" />
 
+OR- 55 OR D3
 
-XOR - A5 AND F1 
+
+<img width="479" alt="Screenshot 2025-03-07 at 1 38 26 AM" src="https://github.com/user-attachments/assets/3d11d152-1955-4dac-91e1-4e9c5946b08e" />
+
+XOR - A5 XOR F1 
 
 <img width="523" alt="Screenshot 2025-03-07 at 1 12 54 AM" src="https://github.com/user-attachments/assets/6acbb7b7-450c-473f-a424-d76c3dc513ba" />
 
