@@ -61,14 +61,14 @@ Addition
 
 Subtraction 
 
--128-0 
+-128 + 0 
 
 <img width="443" alt="Screenshot 2025-03-07 at 12 25 06 AM" src="https://github.com/user-attachments/assets/def4b311-ba73-45ed-a644-4f6477fa6c37" />
 
--100+20
+-100 - 20
 
 <img width="466" alt="Screenshot 2025-03-07 at 1 20 14 AM" src="https://github.com/user-attachments/assets/cb4bd570-9b5c-44ec-81c7-fd28d6cf323e" />
 
-10-11
+10 - 11
 
 <img width="517" alt="Screenshot 2025-03-07 at 12 28 04 AM" src="https://github.com/user-attachments/assets/bb0ad491-7b7f-42f2-af03-4dfd8a852f9b" />
